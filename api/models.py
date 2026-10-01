@@ -11,4 +11,5 @@ class TarefaAtualizar(BaseModel):
     prioridade: Literal["alta", "media", "baixa"]
     concluida: bool
 
-
+class NotaEntrada(BaseModel):
+    conteudo: str = Field(min_length=1)
