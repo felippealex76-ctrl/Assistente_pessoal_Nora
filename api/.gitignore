@@ -1,0 +1,9 @@
+# Ambiente virtual do python ( recriavel com pip install)
+
+venv/
+api/venv/
+
+# Arquivos que o Python gera sozinho
+
+__pycache__/
+*.pyc
