@@ -1,22 +1,24 @@
-import pyttsx3
+import asyncio
+import os
+import tempfile
 
-def criar_voz():
-    engine = pyttsx3.init()
-    engine.setProperty("rate",180)
+import edge_tts
+from playsound import playsound
 
-    for voz in engine.getProperty("voices"):
-        nome = voz.name.lower()
-        if"portug" in nome or "brazil" in nome or "maria" in nome or "daniel" in nome:
-            engine.setProperty("voice", voz.id)
-            break
-    
-    return engine
+# Voz feminina brasileira. Veja outras com:  edge-tts --list-voices
+VOZ = "pt-BR-FranciscaNeural"
+
+
+async def _gerar_audio(texto, caminho):
+    comunicacao = edge_tts.Communicate(texto, VOZ)
+    await comunicacao.save(caminho)
+
 
 def falar(texto):
-    engine = criar_voz()
-    engine.say(texto)
-    engine.runAndWait()
+    caminho = os.path.join(tempfile.gettempdir(), "nora_fala.mp3")
+    asyncio.run(_gerar_audio(texto, caminho))
+    playsound(caminho)
 
-if __name__=="__main__":
-    falar("Olá! Eu sou a Nora, sua assistente pessoal. ")
-    "Prazer em finalmente falar com você!"
+
+if __name__ == "__main__":
+    falar("Olá! Agora eu falo com uma voz de verdade. Bem melhor, né?")
