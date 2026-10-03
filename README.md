@@ -1,4 +1,4 @@
-# 🎙️ Nora — Assistente Pessoal por Voz
+# Nora — Assistente Pessoal por Voz
 
 ![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
@@ -16,21 +16,21 @@ que pulsa enquanto ela fala.
 
 ---
 
-## ✨ Funcionalidades
+##  Funcionalidades:
 
-- 🗣️ **Comando por voz** (pt-BR): criar, listar, concluir e apagar tarefas; criar e listar notas;
+- **Comando por voz** (pt-BR): criar, listar, concluir e apagar tarefas; criar e listar notas;
   agendar e listar compromissos.
-- 📅 **Datas naturais**: *"marca uma reunião amanhã às 15h"* vira uma data real (o cérebro recebe a data de hoje).
-- 🧠 **Cérebro plugável (LLM)**: funciona com a **Groq** (online) ou **Ollama** (local), trocando uma variável de ambiente.
-- 💬 **Personalidade**: a Nora conversa com um tom próprio (gentil, bem-humorada, mas eficiente), não só executa comandos.
-- ✋ **Interrupção por voz (barge-in)**: se você começar a falar no meio de uma explicação longa, ela para e te escuta.
-- 🎛️ **API REST (FastAPI)** com documentação automática em `/docs`.
-- 🖥️ **Dashboard web** (`/app`) para ver e gerenciar tudo pelo navegador.
-- 🌐 **Avatar "orbe de dados"** que gira e pulsa quando ela fala.
+- **Datas naturais**: *"marca uma reunião amanhã às 15h"* vira uma data real (o cérebro recebe a data de hoje).
+- **Cérebro plugável (LLM)**: funciona com a **Groq** (online) ou **Ollama** (local), trocando uma variável de ambiente.
+- **Personalidade**: a Nora conversa com um tom próprio (gentil, bem-humorada, mas eficiente), não só executa comandos.
+- **Interrupção por voz (barge-in)**: se você começar a falar no meio de uma explicação longa, ela para e te escuta.
+- **API REST (FastAPI)** com documentação automática em `/docs`.
+- **Dashboard web** (`/app`) para ver e gerenciar tudo pelo navegador.
+- **Avatar "orbe de dados"** que gira e pulsa quando ela fala.
 
 ---
 
-## 🏗️ Arquitetura
+## Arquitetura:
 
 A Nora é dividida em camadas independentes — a voz, a API e o banco não sabem umas das outras,
 conversam só por HTTP. Isso deixou fácil adicionar o dashboard e o avatar reaproveitando a mesma API.
@@ -43,10 +43,10 @@ flowchart LR
     DISP -->|HTTP| API[(FastAPI<br/>main.py + routers)]
     API --> DB[(SQL Server<br/>tarefas / notas / compromissos)]
     DISP --> VOZ[voz.py<br/>texto → voz neural]
-    VOZ --> SPK[🔊 Alto-falante]
+    VOZ --> SPK[Alto-falante]
 
-    API -. mesma API .-> WEB[🖥️ Dashboard /app]
-    API -. mesma API .-> ORB[🌐 Orbe /app/nora_orb.html]
+    API -. mesma API .-> WEB[Dashboard /app]
+    API -. mesma API .-> ORB[ Orbe /app/nora_orb.html]
 ```
 
 | Camada | Arquivo(s) | Papel |
@@ -61,7 +61,7 @@ flowchart LR
 
 ---
 
-## 🧰 Tecnologias
+## Tecnologias:
 
 **Python** · **FastAPI** · **Uvicorn** · **Pydantic** · **SQL Server** (via `pyodbc`) ·
 **edge-tts** (voz neural) · **SpeechRecognition** + **sounddevice** (microfone) ·
@@ -69,7 +69,7 @@ flowchart LR
 
 ---
 
-## 📁 Estrutura
+## Estrutura:
 
 ```
 AssistenteNora/
@@ -91,7 +91,7 @@ AssistenteNora/
 
 ---
 
-## 🚀 Como rodar
+## Como rodar:
 
 ### Pré-requisitos
 - Python 3.12+
@@ -135,7 +135,7 @@ Exemplos de comandos de voz: *"anota que preciso ligar pro dentista"*, *"quais s
 
 ---
 
-## 🗺️ Roadmap
+## Roadmap
 
 - [ ] Unir avatar + voz neural (endpoint `/falar` servindo o áudio para o orbe pulsar pela amplitude real)
 - [ ] Ativação por palavra-chave ("Nora!")
@@ -145,7 +145,7 @@ Exemplos de comandos de voz: *"anota que preciso ligar pro dentista"*, *"quais s
 
 ---
 
-## 📝 Notas
+## Notas
 
 - O `.env` (com a chave da API) **não** vai para o repositório — veja `.env.example`.
 - Projeto em evolução, feito para estudo e portfólio. Sugestões e críticas são super bem-vindas!
