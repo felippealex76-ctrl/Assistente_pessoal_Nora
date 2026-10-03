@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nora · orbe</title>
+<style>
+  :root{ --cyan:#35e4ff; --violet:#8b85f5; }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{ margin:0; overflow:hidden; background:radial-gradient(circle at 50% 45%, #0a1020 0%, #05060a 70%);
+    display:flex; align-items:center; justify-content:center; font-family:system-ui,sans-serif; }
+  #orb{ display:block; width:100vmin; height:100vmin; max-width:100%; max-height:100%; }
+  .bar{ position:fixed; bottom:10px; left:0; right:0; display:flex; gap:8px; justify-content:center;
+    opacity:.0; transition:.25s; }
+  body:hover .bar{ opacity:.9; }
+  .bar button{ font:inherit; font-size:12px; cursor:pointer; color:#cfe8ff; background:rgba(53,228,255,.10);
+    border:1px solid rgba(53,228,255,.35); border-radius:8px; padding:6px 12px; }
+  .bar button:hover{ background:rgba(53,228,255,.22); }
+</style>
+</head>
+<body>
+<canvas id="orb"></canvas>
+<div class="bar">
+  <button id="b1">Falar saudação</button>
+  <button id="b2">Pulsar</button>
+</div>
+
+<script>
+/* ============================================================
+   NORA — ORBE DE DADOS (globo neural que gira e pulsa)
+   Versão compacta para um widget pequeno na tela do notebook.
+   API: window.Nora.falar(txt) / setSpeaking(bool) / conectarAudio(audio)
+   ============================================================ */
+(() => {
+  const canvas = document.getElementById("orb");
+  const ctx = canvas.getContext("2d");
+  const CY=[53,228,255], VI=[139,133,245], GOLD=[255,214,120];
+  const col=(c,a)=>`rgba(${c[0]},${c[1]},${c[2]},${a})`;
+
+  let W,H,DPR,R,cx,cy;
+  function resize(){
+    DPR=Math.min(devicePixelRatio||1,2);
+    const d=Math.min(innerWidth,innerHeight);
+    W=canvas.width=Math.floor(d*DPR); H=canvas.height=Math.floor(d*DPR);
+    canvas.style.width=d+"px"; canvas.style.height=d+"px";
+    R=Math.min(W,H)*0.33; cx=W/2; cy=H/2;
+  }
+  addEventListener("resize",resize); resize();
+
+  // superfície: esfera de Fibonacci
+  const N=460, surf=[];
+  const gold=Math.PI*(3-Math.sqrt(5));
+  for(let i=0;i<N;i++){
+    const y=1-(i/(N-1))*2, r=Math.sqrt(1-y*y), th=i*gold;
+    surf.push({x:Math.cos(th)*r, y, z:Math.sin(th)*r, hub:Math.random()<0.08, ph:Math.random()*6.28});
+  }
+  // anéis orbitais (satélites em grande círculo inclinado)
+  function base(tiltX,tiltZ){
+    const cx1=Math.cos(tiltX),sx=Math.sin(tiltX),cz=Math.cos(tiltZ),sz=Math.sin(tiltZ);
+    return {
+      u:{x:cz, y:sz*cx1, z:sz*sx},
+      v:{x:-sz, y:cz*cx1, z:cz*sx},
+    };
+  }
+  const orbits=[ {b:base(0.5,0.2),sp:0.6,rr:1.35,hub:3}, {b:base(-0.6,1.1),sp:-0.42,rr:1.5,hub:11}, {b:base(0.2,-0.8),sp:0.5,rr:1.22,hub:19} ];
+
+  let speaking=false, speakUntil=0, pulse=0, ripples=[];
+  let analyser=null, freqData=null, amp=0;
+
+  function rotY(p,a){ const c=Math.cos(a),s=Math.sin(a); return {x:p.x*c+p.z*s, y:p.y, z:-p.x*s+p.z*c}; }
+  function proj(p){ const f=3.2, s=f/(f-p.z); return {x:cx+p.x*R*s, y:cy-p.y*R*s, z:p.z, s}; }
+
+  function atualizarAmp(){
+    if(analyser){ analyser.getByteFrequencyData(freqData); let s=0; for(const v of freqData)s+=v; amp=(s/freqData.length)/110; }
+    else amp = speaking ? 0.4+0.6*Math.abs(Math.sin(performance.now()/120)) : 0;
+    const alvo = speaking ? 1 : 0;
+    pulse += (alvo - pulse)*0.08;
+  }
+
+  let t0=performance.now();
+  function frame(now){
+    const t=(now-t0)/1000;
+    if(speaking && now>speakUntil && !analyser) setSpeaking(false);
+    atualizarAmp();
+
+    ctx.clearRect(0,0,W,H);
+
+    // brilho central
+    const glowR=R*(1.25+pulse*0.25+amp*0.15);
+    const g=ctx.createRadialGradient(cx,cy,0,cx,cy,glowR);
+    g.addColorStop(0,col(CY,0.18+0.18*pulse)); g.addColorStop(0.5,col(VI,0.05)); g.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,glowR,0,Math.PI*2); ctx.fill();
+
+    const a = t*0.25 + t*pulse*0.35;   // gira mais rápido ao falar
+    const escala = 1 + amp*0.05;
+
+    // anéis orbitais + satélites
+    ctx.lineWidth=1*DPR;
+    for(const o of orbits){
+      const {u,v}=o.b; const pontos=[];
+      for(let k=0;k<=72;k++){
+        const ang=k/72*Math.PI*2;
+        let p={x:(u.x*Math.cos(ang)+v.x*Math.sin(ang))*o.rr,
+               y:(u.y*Math.cos(ang)+v.y*Math.sin(ang))*o.rr,
+               z:(u.z*Math.cos(ang)+v.z*Math.sin(ang))*o.rr};
+        p=rotY(p,a*0.6); pontos.push(proj(p));
+      }
+      for(let k=0;k<pontos.length-1;k++){
+        const A=pontos[k],B=pontos[k+1], b=0.5+0.5*((A.z+B.z)/2);
+        ctx.strokeStyle=col(CY,0.05+0.12*b); ctx.beginPath(); ctx.moveTo(A.x,A.y); ctx.lineTo(B.x,B.y); ctx.stroke();
+      }
+      // satélite
+      const ang=t*o.sp;
+      let sp3={x:(u.x*Math.cos(ang)+v.x*Math.sin(ang))*o.rr,
+               y:(u.y*Math.cos(ang)+v.y*Math.sin(ang))*o.rr,
+               z:(u.z*Math.cos(ang)+v.z*Math.sin(ang))*o.rr};
+      sp3=rotY(sp3,a*0.6); const sp=proj(sp3);
+      // linha até um hub da superfície
+      const hub=proj(rotY(surf[o.hub],a));
+      ctx.strokeStyle=col(VI,0.25*(0.5+0.5*sp3.z)); ctx.beginPath(); ctx.moveTo(sp.x,sp.y); ctx.lineTo(hub.x,hub.y); ctx.stroke();
+      ctx.shadowColor=col(GOLD,0.9); ctx.shadowBlur=10*DPR;
+      ctx.fillStyle=col(GOLD,0.9); ctx.beginPath(); ctx.arc(sp.x,sp.y,2.6*DPR,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0;
+    }
+
+    // superfície (pontos)
+    for(const s of surf){
+      const p=proj(rotY({x:s.x*escala,y:s.y*escala,z:s.z*escala},a));
+      const front=(p.z+1)/2;                 // 0 atrás, 1 frente
+      if(s.hub){
+        const tw=0.6+0.4*Math.sin(t*3+s.ph);
+        ctx.shadowColor=col(CY,0.9); ctx.shadowBlur=9*DPR;
+        ctx.fillStyle=col(CY,(0.35+0.5*front)*tw+0.15*pulse);
+        ctx.beginPath(); ctx.arc(p.x,p.y,(1.6+1.4*front)*DPR,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0;
+      } else {
+        ctx.fillStyle=col(CY,0.12+0.5*front);
+        ctx.beginPath(); ctx.arc(p.x,p.y,(0.7+1.0*front)*DPR,0,Math.PI*2); ctx.fill();
+      }
+    }
+
+    // ondas ao falar
+    if(speaking && Math.random()<0.04) ripples.push({r:R*0.9, a:0.5});
+    for(let i=ripples.length-1;i>=0;i--){
+      const rp=ripples[i]; rp.r+=2.2*DPR; rp.a-=0.012;
+      if(rp.a<=0){ ripples.splice(i,1); continue; }
+      ctx.strokeStyle=col(CY,rp.a); ctx.lineWidth=1.2*DPR;
+      ctx.beginPath(); ctx.arc(cx,cy,rp.r,0,Math.PI*2); ctx.stroke();
+    }
+
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  // ---- fala / API (igual ao rosto) ----
+  function setSpeaking(on){ speaking=on; }
+  function escolherVoz(){
+    const vs=speechSynthesis.getVoices().filter(v=>v.lang&&v.lang.toLowerCase().startsWith("pt"));
+    const fem=["maria","francisca","luciana","heloisa","vitoria","google"];
+    for(const nome of fem){ const f=vs.find(v=>v.name.toLowerCase().includes(nome)); if(f) return f; }
+    return vs.find(v=>!/daniel|ricardo|felipe|paulo/i.test(v.name)) || vs[0];
+  }
+  function falar(texto){
+    if(!texto) return; speakUntil=performance.now()+Math.max(1200,texto.length*60); setSpeaking(true);
+    try{ if("speechSynthesis" in window){ speechSynthesis.cancel();
+      const u=new SpeechSynthesisUtterance(texto); u.lang="pt-BR"; u.pitch=1.1;
+      const v=escolherVoz(); if(v)u.voice=v;
+      u.onend=()=>setSpeaking(false); speechSynthesis.speak(u);
+    }}catch(e){}
+  }
+  function conectarAudio(audioEl){
+    try{ const AC=window.AudioContext||window.webkitAudioContext; const ac=new AC();
+      const src=ac.createMediaElementSource(audioEl); analyser=ac.createAnalyser(); analyser.fftSize=256;
+      freqData=new Uint8Array(analyser.frequencyBinCount); src.connect(analyser); analyser.connect(ac.destination);
+      audioEl.addEventListener("play",()=>setSpeaking(true)); audioEl.addEventListener("ended",()=>setSpeaking(false));
+    }catch(e){ console.warn(e); }
+  }
+  window.Nora={ falar,setSpeaking,conectarAudio };
+
+  document.getElementById("b1").onclick=()=>falar("Olá! Estou aqui, pronta para ajudar.");
+  document.getElementById("b2").onclick=()=>{ speakUntil=performance.now()+2600; setSpeaking(true); };
+  setTimeout(()=>{ speakUntil=performance.now()+2600; setSpeaking(true); },500);
+})();
+</script>
+</body>
+</html>

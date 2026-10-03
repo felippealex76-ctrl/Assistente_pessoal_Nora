@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nora</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f7fb;
+    --surface: #ffffff;
+    --surface-2: #f0f1f7;
+    --border: #e3e5ee;
+    --text: #1b1d27;
+    --muted: #6b6f82;
+    --accent: #4f46e5;
+    --accent-soft: #eceafe;
+    --teal: #0d9488;
+    --teal-soft: #d8f3ef;
+    --danger: #dc2626;
+    --amber: #b45309;
+    --shadow: 0 1px 2px rgba(16,18,40,.05), 0 8px 24px rgba(16,18,40,.06);
+    --radius: 14px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e0f17;
+      --surface: #171824;
+      --surface-2: #1f2130;
+      --border: #2a2c3d;
+      --text: #e9eaf2;
+      --muted: #9598ac;
+      --accent: #8b85f5;
+      --accent-soft: #241f44;
+      --teal: #2dd4bf;
+      --teal-soft: #0f2d2a;
+      --danger: #f87171;
+      --amber: #fbbf24;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "IBM Plex Sans", system-ui, sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  header {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 16px 8px;
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .logo {
+    font-family: "Sora", sans-serif;
+    font-weight: 700;
+    font-size: 30px;
+    letter-spacing: -.02em;
+  }
+  .logo span { color: var(--accent); }
+  .tagline { color: var(--muted); font-size: 15px; }
+  .status {
+    margin-left: auto;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12.5px;
+    color: var(--muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+  .dot.on { background: var(--teal); box-shadow: 0 0 0 4px var(--teal-soft); }
+  .dot.off { background: var(--danger); }
+
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px 16px 64px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 18px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .card h2 {
+    font-family: "Sora", sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+    padding: 18px 18px 14px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+  .count {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    color: var(--muted);
+    background: var(--surface-2);
+    border-radius: 999px;
+    padding: 1px 9px;
+  }
+  form { padding: 0 18px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .row { display: flex; gap: 8px; }
+  input, select, textarea {
+    font: inherit;
+    color: var(--text);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 9px 11px;
+    width: 100%;
+    outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 40px; }
+  button {
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    border-radius: 9px;
+    padding: 9px 14px;
+    background: var(--accent);
+    color: #fff;
+    white-space: nowrap;
+    transition: filter .15s;
+  }
+  button:hover { filter: brightness(1.07); }
+  button:active { filter: brightness(.95); }
+
+  ul { list-style: none; margin: 0; padding: 0 10px 12px; flex: 1; }
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 11px 8px;
+    border-top: 1px solid var(--border);
+  }
+  li:first-child { border-top: none; }
+  .item-body { flex: 1; min-width: 0; }
+  .item-title { font-size: 14.5px; word-break: break-word; }
+  .item-sub {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .done .item-title { text-decoration: line-through; color: var(--muted); }
+  .check {
+    appearance: none;
+    width: 19px; height: 19px;
+    margin-top: 1px;
+    border: 1.8px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    flex: none;
+    position: relative;
+    background: var(--surface-2);
+  }
+  .check:checked { background: var(--teal); border-color: var(--teal); }
+  .check:checked::after {
+    content: "";
+    position: absolute; left: 5.5px; top: 2px;
+    width: 4px; height: 9px;
+    border: solid #fff; border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+  .badge {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    padding: 1px 7px;
+    border-radius: 999px;
+    flex: none;
+    margin-top: 2px;
+  }
+  .p-alta  { color: var(--danger); background: color-mix(in srgb, var(--danger) 14%, transparent); }
+  .p-media { color: var(--amber);  background: color-mix(in srgb, var(--amber) 16%, transparent); }
+  .p-baixa { color: var(--teal);   background: var(--teal-soft); }
+  .del {
+    background: none; color: var(--muted);
+    padding: 2px 7px; font-size: 17px; line-height: 1;
+    border-radius: 7px; flex: none;
+  }
+  .del:hover { color: var(--danger); filter: none; background: var(--surface-2); }
+  .empty { color: var(--muted); font-size: 13.5px; padding: 16px 8px; text-align: center; }
+
+  #toast {
+    position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%) translateY(20px);
+    background: var(--text); color: var(--bg);
+    padding: 10px 18px; border-radius: 10px; font-size: 14px; font-weight: 500;
+    opacity: 0; pointer-events: none; transition: all .25s; box-shadow: var(--shadow);
+    z-index: 10;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Nora<span>.</span></div>
+  <div class="tagline">assistente pessoal — tarefas, notas e agenda</div>
+  <div class="status"><span class="dot" id="dot"></span><span id="statusText">conectando…</span></div>
+</header>
+
+<main>
+  <!-- TAREFAS -->
+  <section class="card">
+    <h2>Tarefas <span class="count" id="c-tarefas">0</span></h2>
+    <form id="form-tarefa">
+      <div class="row">
+        <input id="t-titulo" placeholder="Nova tarefa…" required>
+        <select id="t-prioridade" style="width:auto">
+          <option value="media">média</option>
+          <option value="alta">alta</option>
+          <option value="baixa">baixa</option>
+        </select>
+      </div>
+      <button>Adicionar tarefa</button>
+    </form>
+    <ul id="lista-tarefas"></ul>
+  </section>
+
+  <!-- NOTAS -->
+  <section class="card">
+    <h2>Notas <span class="count" id="c-notas">0</span></h2>
+    <form id="form-nota">
+      <textarea id="n-conteudo" placeholder="Escreva uma nota…" required></textarea>
+      <button>Salvar nota</button>
+    </form>
+    <ul id="lista-notas"></ul>
+  </section>
+
+  <!-- COMPROMISSOS -->
+  <section class="card">
+    <h2>Compromissos <span class="count" id="c-compromissos">0</span></h2>
+    <form id="form-compromisso">
+      <input id="co-titulo" placeholder="Título do compromisso…" required>
+      <div class="row">
+        <input id="co-data" type="datetime-local" required>
+        <input id="co-local" placeholder="local (opcional)">
+      </div>
+      <button>Agendar</button>
+    </form>
+    <ul id="lista-compromissos"></ul>
+  </section>
+</main>
+
+<div id="toast"></div>
+
+<script>
+const API = ""; // mesma origem do servidor (http://127.0.0.1:8000)
+
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove("show"), 2200);
+}
+
+async function api(metodo, caminho, corpo) {
+  const opcoes = { method: metodo, headers: { "Content-Type": "application/json" } };
+  if (corpo !== undefined) opcoes.body = JSON.stringify(corpo);
+  const r = await fetch(API + caminho, opcoes);
+  if (!r.ok) throw new Error(await r.text());
+  return r.status === 200 ? r.json() : null;
+}
+
+function setStatus(online) {
+  const dot = document.getElementById("dot");
+  const txt = document.getElementById("statusText");
+  dot.className = "dot " + (online ? "on" : "off");
+  txt.textContent = online ? "API online" : "API offline";
+}
+
+function formatarData(iso) {
+  const d = new Date(iso);
+  if (isNaN(d)) return iso;
+  return d.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+}
+
+const el = (id) => document.getElementById(id);
+
+// ---------- TAREFAS ----------
+async function carregarTarefas() {
+  const tarefas = await api("GET", "/tarefas");
+  el("c-tarefas").textContent = tarefas.length;
+  const ul = el("lista-tarefas");
+  ul.innerHTML = tarefas.length ? "" : '<div class="empty">Nenhuma tarefa ainda.</div>';
+  for (const t of tarefas) {
+    const li = document.createElement("li");
+    if (t.concluida) li.className = "done";
+    li.innerHTML = `
+      <input type="checkbox" class="check" ${t.concluida ? "checked" : ""}>
+      <div class="item-body"><div class="item-title"></div></div>
+      <span class="badge p-${t.prioridade}">${t.prioridade}</span>
+      <button class="del" title="apagar">&times;</button>`;
+    li.querySelector(".item-title").textContent = t.titulo;
+    li.querySelector(".check").onchange = async () => {
+      await api("PUT", `/tarefas/${t.id}`, { titulo: t.titulo, prioridade: t.prioridade, concluida: !t.concluida });
+      carregarTarefas();
+    };
+    li.querySelector(".del").onclick = async () => {
+      await api("DELETE", `/tarefas/${t.id}`);
+      toast("Tarefa apagada");
+      carregarTarefas();
+    };
+    ul.appendChild(li);
+  }
+}
+
+el("form-tarefa").onsubmit = async (e) => {
+  e.preventDefault();
+  await api("POST", "/tarefas", { titulo: el("t-titulo").value.trim(), prioridade: el("t-prioridade").value });
+  el("t-titulo").value = "";
+  toast("Tarefa adicionada");
+  carregarTarefas();
+};
+
+// ---------- NOTAS ----------
+async function carregarNotas() {
+  const notas = await api("GET", "/notas");
+  el("c-notas").textContent = notas.length;
+  const ul = el("lista-notas");
+  ul.innerHTML = notas.length ? "" : '<div class="empty">Nenhuma nota ainda.</div>';
+  for (const n of notas) {
+    const li = document.createElement("li");
+    const sub = n.criada_em ? `<div class="item-sub">${formatarData(n.criada_em)}</div>` : "";
+    li.innerHTML = `<div class="item-body"><div class="item-title"></div>${sub}</div>
+      <button class="del" title="apagar">&times;</button>`;
+    li.querySelector(".item-title").textContent = n.conteudo;
+    li.querySelector(".del").onclick = async () => {
+      await api("DELETE", `/notas/${n.id}`);
+      toast("Nota apagada");
+      carregarNotas();
+    };
+    ul.appendChild(li);
+  }
+}
+
+el("form-nota").onsubmit = async (e) => {
+  e.preventDefault();
+  await api("POST", "/notas", { conteudo: el("n-conteudo").value.trim() });
+  el("n-conteudo").value = "";
+  toast("Nota salva");
+  carregarNotas();
+};
+
+// ---------- COMPROMISSOS ----------
+async function carregarCompromissos() {
+  const comps = await api("GET", "/compromissos");
+  el("c-compromissos").textContent = comps.length;
+  const ul = el("lista-compromissos");
+  ul.innerHTML = comps.length ? "" : '<div class="empty">Nenhum compromisso agendado.</div>';
+  for (const c of comps) {
+    const li = document.createElement("li");
+    const local = c.local ? ` · ${c.local}` : "";
+    li.innerHTML = `<div class="item-body"><div class="item-title"></div>
+      <div class="item-sub">${formatarData(c.data_hora)}${local ? "<span></span>" : ""}</div></div>
+      <button class="del" title="apagar">&times;</button>`;
+    li.querySelector(".item-title").textContent = c.titulo;
+    if (c.local) li.querySelector(".item-sub span").textContent = ` · ${c.local}`;
+    li.querySelector(".del").onclick = async () => {
+      await api("DELETE", `/compromissos/${c.id}`);
+      toast("Compromisso apagado");
+      carregarCompromissos();
+    };
+    ul.appendChild(li);
+  }
+}
+
+el("form-compromisso").onsubmit = async (e) => {
+  e.preventDefault();
+  await api("POST", "/compromissos", {
+    titulo: el("co-titulo").value.trim(),
+    data_hora: el("co-data").value,            // ex.: 2026-10-03T15:00 (ISO aceito pelo Pydantic)
+    local: el("co-local").value.trim() || null,
+  });
+  el("co-titulo").value = "";
+  el("co-data").value = "";
+  el("co-local").value = "";
+  toast("Compromisso agendado");
+  carregarCompromissos();
+};
+
+// ---------- INICIALIZAÇÃO ----------
+async function iniciar() {
+  try {
+    await Promise.all([carregarTarefas(), carregarNotas(), carregarCompromissos()]);
+    setStatus(true);
+  } catch (err) {
+    console.error(err);
+    setStatus(false);
+    toast("Não consegui falar com a API. O uvicorn está rodando?");
+  }
+}
+iniciar();
+setInterval(() => fetch(API + "/").then(() => setStatus(true)).catch(() => setStatus(false)), 10000);
+</script>
+</body>
+</html>

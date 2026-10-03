@@ -1,9 +1,13 @@
-# Ambiente virtual do python ( recriavel com pip install)
-
+# Ambiente virtual do python (recriável com pip install)
 venv/
 api/venv/
 
 # Arquivos que o Python gera sozinho
-
 __pycache__/
 *.pyc
+
+# Segredos
+.env
+
+# Experimento do rosto (usa imagem de terceiros com marca d'água — não publicar)
+static/nora.html
